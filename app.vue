@@ -1,19 +1,26 @@
 <script setup lang="ts">
+// importadas as bibliotecas necessárias, zod para confirmação de dados de formulário e um tipo que define o evento de subimissão de formulário
 import { z } from 'zod'
 import type { FormSubmitEvent } from '#ui/types'
 
+// Esquema e tipo para o objeto que deve ser verificado pela biblioteca zod
 const schema = z.object({
   message: z.string().min(1, 'Must be at least 1 character')
 })
-
 type Schema = z.output<typeof schema>
 
+// Variável reativa do input de mensagem
 const state = reactive({
   message: undefined,
 })
 
+// array de mensagens reativas do tipo ref com tipos definidos para as propriedades
 const messages = ref<{who:string, msg:string, time?:string}[]>([])
 
+// Função que envia o request para o servidor, está sem tratamento de erros, 
+// somente para testes de desenvolvimento locais, também calcula o tempo decorrido do request
+// até a resposta através do performance.now() e organiza os dados recebidos na array de mensagens
+// assim como cuida do estado de loading da aplicação
 async function onSubmit(event: FormSubmitEvent<Schema>) {
   loading.value = true
   messages.value.unshift({who:'user', msg:event.data.message})
@@ -39,7 +46,7 @@ const loading = ref(false)
         <h2 class="text-xs text-gray-400">Engenharia Mecatrônica - Unicesumar</h2>
       </div>
       <div class="flex flex-col">
-        <ul v-if="messages" class="gap-5 py-10 flex overflow-hidden max-h-[80svh] flex-col-reverse">
+        <ul v-if="messages" class="gap-5 py-10 flex overflow-scroll max-h-[80svh] flex-col-reverse">
         <li v-for="msg in messages" :class="[msg.who === 'user' ?'self-end bg-green-700/35' : 'self-start bg-slate-800','p-3 rounded-lg flex flex-col space-y-2 min-w-[90px] max-w-[300px]']">
           <p>{{msg.msg}}</p>
           <div :class="[msg.time? 'justify-between':'justify-end', 'text-xs flex flex-row w-full']">
@@ -59,3 +66,9 @@ const loading = ref(false)
     </div>
   </div>
 </template>
+
+<style>
+::-webkit-scrollbar {
+  display: none;
+}
+</style>
